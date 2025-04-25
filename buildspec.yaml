@@ -1,18 +1,26 @@
 version: 0.2
 env:
   variables:
+    REPOSITORY_URL: 008971679675.dkr.ecr.ap-south-1.amazonaws.com/my-eks-repo
     EKS_CLUSTERNAME: my-eks-cluster
     EKS_ROLE_ARN: arn:aws:iam::008971679675:role/eksrolepolicy
-    REPOSITORY_URL: 008971679675.dkr.ecr.ap-south-1.amazonaws.com/my-eks-repo
 phases:
   install:
     commands:
       - echo "Install Phase - if you need additional package, add it in this stage"
   pre_build:
     commands:
-      - TAG="$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
-      - echo "Update Image tag in kubernetes manifest"
-      - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URL:$TAG"'@' manifests/deployment.yaml
+      - echo "Checking if manifests/deployment.yaml exists"
+      - ls -l manifests/deployment.yaml || echo "Error: manifests/deployment.yaml not found"
+      - echo "Printing manifests/deployment.yaml content"
+      - cat manifests/deployment.yaml
+      - TAG="$(date +%Y-%m-%d.%H.%M.%S).$(echo ${CODEBUILD_RESOLVED_SOURCE_VERSION:-unknown} | head -c 8)"
+      - echo "REPOSITORY_URL=$REPOSITORY_URL"
+      - echo "TAG=$TAG"
+      - echo "Replacing CONTAINER_IMAGE with $REPOSITORY_URL:$TAG"
+      - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URL:$TAG"'@' manifests/deployment.yaml || echo "sed command failed"
+      - echo "Updated manifests/deployment.yaml content"
+      - cat manifests/deployment.yaml
       - echo "Checking AWS CLI Version..."
       - aws --version
       - echo "Login in to Amazon ECR Registry"
