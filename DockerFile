@@ -1,2 +1,17 @@
-FROM nginx
-COPY app /usr/share/nginx/html/app
+# Use a base image (e.g., Node.js, Python, etc., based on your app)
+FROM node:18
+
+# Set working directory
+WORKDIR /app
+
+# Copy application files
+COPY . .
+
+# Install dependencies (modify based on your app)
+RUN npm install
+
+# Expose port
+EXPOSE 80
+
+# Command to run the app
+CMD ["node", "index.js"]
