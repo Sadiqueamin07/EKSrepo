@@ -11,16 +11,17 @@ phases:
   pre_build:
     commands:
       - echo "Checking if manifests/deployment.yaml exists"
-      - ls -l manifests/deployment.yaml || echo "Error: manifests/deployment.yaml not found"
+      - ls -l manifests/deployment.yaml || true
+      - if [ ! -f manifests/deployment.yaml ]; then echo "Error: manifests/deployment.yaml not found"; fi
       - echo "Printing manifests/deployment.yaml content"
-      - cat manifests/deployment.yaml
+      - cat manifests/deployment.yaml || true
       - TAG="$(date +%Y-%m-%d.%H.%M.%S).$(echo ${CODEBUILD_RESOLVED_SOURCE_VERSION:-unknown} | head -c 8)"
       - echo "REPOSITORY_URL=$REPOSITORY_URL"
       - echo "TAG=$TAG"
       - echo "Replacing CONTAINER_IMAGE with $REPOSITORY_URL:$TAG"
       - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URL:$TAG"'@' manifests/deployment.yaml || echo "sed command failed"
       - echo "Updated manifests/deployment.yaml content"
-      - cat manifests/deployment.yaml
+      - cat manifests/deployment.yaml || true
       - echo "Checking AWS CLI Version..."
       - aws --version
       - echo "Login in to Amazon ECR Registry"
